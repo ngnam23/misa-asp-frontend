@@ -1,0 +1,38 @@
+{
+  "name": "misa-asp",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "format": "prettier --write --experimental-cli src/"
+  },
+  "dependencies": {
+    "pinia": "^3.0.4",
+    "vue": "^3.5.28",
+    "vue-router": "^5.0.2",
+    "@primeuix/themes": "^2.0.3",
+    "axios": "^1.13.5",
+    "primeicons": "^7.0.0",
+    "primevue": "^4.5.4",
+    "sass": "^1.97.3",
+    "tailwindcss-animate": "^1.0.7",
+    "vee-validate": "^4.15.1",
+    "yup": "^1.7.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.4",
+    "@vitejs/plugin-vue-jsx": "^5.1.4",
+    "prettier": "3.8.1",
+    "vite": "^7.3.1",
+    "vite-plugin-vue-devtools": "^8.0.6",
+    "autoprefixer": "^10.4.24",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^3.4.1"
+  },
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  }
+}

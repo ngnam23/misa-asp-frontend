@@ -1,0 +1,40 @@
+:root {
+  --font-family: 'Inter', sans-serif;
+  --text-color: #111111;
+  --text-color-secondary: #212121;
+  --primary-color: #2ca01c;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-family: var(--font-family);
+  font-optical-sizing: auto;
+  font-weight: 500;
+  color: var(--text-color);
+  font-style: normal;
+  text-rendering: optimizeSpeed;
+}
+
+body {
+  font-size: 13px;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #888;
+}
+::-webkit-scrollbar-thumb {
+  background: #b8bcc3;
+  border-radius: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}

@@ -1,0 +1,179 @@
+.icon-switch-app {
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  background: url(../svgs/icon.svg) no-repeat -424px -88px;
+}
+.icon-three-stripes {
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  background: url(../svgs/icon.svg) no-repeat -312px -32px;
+}
+.icon-input-search {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  background: url(../svgs/icon.svg) no-repeat -992px -360px;
+}
+.icon-install-new {
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  background: url(../svgs/icon.svg) no-repeat -1771px -28px;
+}
+.icon-setting-new {
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  background: url(../svgs/icon.svg) no-repeat -1796px -28px;
+}
+.icon-notification-new {
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  background: url(../svgs/icon.svg) no-repeat -1847px -28px;
+}
+.icon-question-new {
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  background: url(../svgs/icon.svg) no-repeat -1870px -28px;
+}
+.icon-knowledge-new {
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  background: url(../svgs/icon.svg) no-repeat -1916px -27px;
+}
+.icon-plus-success {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  background: url(../svgs/icon.svg) no-repeat -32px -312px;
+}
+.icon-sidebar {
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  background: url(../svgs/icon.svg) no-repeat;
+
+  &.icon-dashboard {
+    background-position: -30px -1628px;
+  }
+  &.icon-cash {
+    background-position: -73px -1628px;
+  }
+  &.icon-bank {
+    background-position: -117px -1628px;
+  }
+  &.icon-sale {
+    background-position: -204px -1628px;
+  }
+  &.icon-pu {
+    background-position: -161px -1628px;
+  }
+  &.icon-invoice {
+    background-position: -249px -1628px;
+  }
+  &.icon-stock {
+    background-position: -291px -1628px;
+  }
+  &.icon-tools {
+    background-position: -336px -1628px;
+  }
+  &.icon-fixed-assets {
+    background-position: -378px -1630px;
+  }
+  &.icon-salary {
+    background-position: -467px -1659px;
+  }
+  &.icon-tax {
+    background-position: -423px -1630px;
+  }
+  &.icon-price {
+    background-position: -467px -1628px;
+  }
+  &.icon-general {
+    background-position: -510px -1628px;
+  }
+  &.icon-report {
+    background-position: -547px -1630px;
+  }
+  &.icon-compare {
+    background-position: -877px -1660px;
+  }
+  &.icon-menu {
+    background-position: -547px -1660px;
+
+    &.active {
+      background-position: -590px -1660px;
+    }
+  }
+  &.icon-opening {
+    background-position: -632px -1660px;
+  }
+}
+.icon-arrow-right-small {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  background: url(../svgs/icon.svg) no-repeat -602px -1861px;
+}
+.icon-arrow-up-white {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  background: url(../svgs/icon.svg) no-repeat -848px -359px;
+}
+.icon-chevron-left {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  background: url(../svgs/icon.svg) no-repeat -224px -360px;
+}
+.icon-arrow-check-all {
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  background: url(../svgs/icon.svg) no-repeat -256px -143px;
+}
+.icon-arrow-up-black {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  background: url(../svgs/icon.svg) no-repeat -560px -359px;
+}
+.icon-refresh {
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  background: url(../svgs/icon.svg) no-repeat;
+  background-position: -424px -200px;
+
+  &.active {
+    background-position: -1096px -88px;
+  }
+}
+.icon-excel {
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  background: url(../svgs/icon.svg) no-repeat;
+  background-position: -704px -200px;
+
+  &.active {
+    background-position: -704px -256px;
+  }
+}
+.icon-setting {
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  background: url(../svgs/icon.svg) no-repeat;
+  background-position: -88px -200px;
+
+  &.active {
+    background-position: -88px -256px;
+  }
+}
