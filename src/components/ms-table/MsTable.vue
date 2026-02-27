@@ -75,6 +75,10 @@ const props = defineProps({
     type: Array,
     required: true,
   },
+  keyField: {
+    type: String,
+    default: 'id',
+  },
 })
 
 const emit = defineEmits(['updateSelectedIds'])
@@ -93,7 +97,7 @@ watch(
 
 const handleSelectAll = () => {
   if (selectedAll.value) {
-    selectedIds.value = props.rows.map((row) => row.customerID)
+    selectedIds.value = props.rows.map((row) => row[props.keyField])
   } else {
     selectedIds.value = []
   }

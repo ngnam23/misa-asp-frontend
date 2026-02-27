@@ -38,3 +38,18 @@ body {
 ::-webkit-scrollbar-track {
   background: #f1f1f1;
 }
+
+// Reset dialog
+.custom-dialog {
+  border-radius: 3px !important;
+
+  .p-dialog-header {
+    display: none !important;
+  }
+  .p-dialog-content {
+    padding: 32px 32px 0 !important;
+  }
+  .p-dialog-footer {
+    padding: 0 32px 32px !important;
+  }
+}

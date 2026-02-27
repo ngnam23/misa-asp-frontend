@@ -30,7 +30,8 @@
               { label: 'Sử dụng hàng loạt', value: 'activeAll' },
               { label: 'Ngừng sử dụng hàng loạt', value: 'unActiveAll' },
             ]"
-            :disabled="false"
+            :disabled="selectedIdsArray.length <= 1"
+            @select="handleActionAll"
           />
           <modal-filter label="Lọc" class="ml-3" @filter="handleFilter" />
         </div>
@@ -61,7 +62,12 @@
       <div class="w-full h-[calc(100%-56px)] px-4 overflow-x-auto">
         <div class="min-w-full h-full overflow-x-auto">
           <div class="h-[calc(100%-42px)] overflow-y-auto">
-            <ms-table :fields="EMPLOYEE_FIELDS" :rows="rows" />
+            <ms-table
+              :fields="EMPLOYEE_FIELDS"
+              :rows="rows"
+              key-field="employeeID"
+              @update-selected-ids="handleSelectedIds"
+            />
           </div>
           <div class="flex items-center py-2 justify-between">
             <span class="font-normal"
@@ -83,16 +89,35 @@ import MsSelect from '@/components/ms-select/MsSelect.vue'
 import MsTable from '@/components/ms-table/MsTable.vue'
 import { nextTick, onMounted, ref, watch } from 'vue'
 import { EMPLOYEE_FIELDS, PAGE_SIZE_OPTIONS } from '@/constants/common'
-import { listApi } from '@/constants/list-api'
-import http from '@/utils/http'
 import MsSelectOption from '@/components/ms-select/MsSelectOption.vue'
-import { useRoute, useRouter } from 'vue-router'
-import { debounce } from '@/utils/debounce'
 import PaginationTable from './_components/PaginationTable.vue'
 import ModalFilter from './_components/ModalFilter.vue'
+import { useEmployeeTable } from '@/composables/useEmployeeTable'
+import { useConfirm } from 'primevue/useconfirm'
+import http from '@/utils/http'
+import { listApi } from '@/constants/list-api'
+import { useToast } from 'primevue/usetoast'
 
-const router = useRouter()
-const route = useRoute()
+const confirm = useConfirm()
+const toast = useToast()
+
+const {
+  rows,
+  totalItems,
+  page,
+  pageSize,
+  keyword,
+  contactTitle,
+  isActive,
+  gender,
+  unitCode,
+  getData,
+  updateRouterQuery,
+  debounceGetData,
+  handleFilter,
+} = useEmployeeTable()
+
+const selectedIdsArray = ref([])
 
 const listActionHead = [
   {
@@ -109,70 +134,88 @@ const listActionHead = [
   },
 ]
 const actionHeadIndex = ref(null)
-const rows = ref([])
-const totalItems = ref(0)
-const page = ref(parseInt(route.query.page) || 1)
-const pageSize = ref(parseInt(route.query.pageSize) || 20)
-const keyword = ref(route.query.keyword || '')
-const contactTitle = ref(route.query.contactTitle || '')
-const isActive = ref(+route.query.isActive === 0 ? 0 : +route.query.isActive || -1)
-const gender = ref(+route.query.gender === 0 ? 0 : +route.query.gender || -1)
-const unitCode = ref(route.query.unitCode || '')
 
-const getData = async () => {
-  try {
-    const response = await http.get(listApi.Employees, {
-      params: {
-        pageSize: pageSize.value,
-        page: page.value,
-        keyword: keyword.value,
-        contactTitle: contactTitle.value,
-        isActive: +isActive.value === -1 ? null : Boolean(isActive.value),
-        gender: +gender.value === -1 ? null : Boolean(gender.value),
-        unitCode: unitCode.value === '' ? null : unitCode.value,
-      },
-    })
-    if (response.success) {
-      rows.value = response.data.data
-      totalItems.value = response.data.meta.total
-    }
-  } catch (error) {
-    console.error('Error fetching employee list:', error)
-    rows.value = []
-    totalItems.value = 0
-  }
+const handleSelectedIds = (selectedIds) => {
+  selectedIdsArray.value = selectedIds
 }
 
-const updateRouterQuery = () => {
-  router.push({
-    name: 'employee',
-    query: {
-      keyword: keyword.value,
-      page: page.value,
-      pageSize: pageSize.value,
-      contactTitle: contactTitle.value,
-      isActive: isActive.value,
-      gender: gender.value,
-      unitCode: unitCode.value,
+const handleActionAll = (action) => {
+  const itemMap = new Map(rows.value.map((item) => [item.employeeID, item.employeeCode]))
+
+  const labels = selectedIdsArray.value.map((id) => itemMap.get(id)).filter(Boolean)
+
+  confirm.require({
+    group: 'dialog',
+    message: `Bạn có thực sự muốn ${action.label.toLowerCase()} Nhân viên <${labels.join(', ')}> không?`,
+    icon: 'icon-exclamation-warning',
+    acceptLabel: 'Có',
+    rejectLabel: 'Không',
+    acceptClass:
+      '!h-[30px] !px-4 !text-white !text-[13px] !bg-primary hover:!bg-[#35bf22] !rounded-[3px] !border-transparent',
+    rejectClass:
+      '!h-[30px] !px-4 !rounded-[3px] !text-[13px] !bg-white hover:!bg-[#d2d3d6] !border !border-[#8d9096] !text-111',
+    accept: () => {
+      if (action.value === 'deleteAll') {
+        handleDeleteEmployee(selectedIdsArray.value)
+      } else if (action.value === 'activeAll') {
+        handleChangeStatusEmployee(1, selectedIdsArray.value)
+      } else if (action.value === 'unActiveAll') {
+        handleChangeStatusEmployee(0, selectedIdsArray.value)
+      }
     },
   })
 }
 
-const debounceGetData = debounce(() => {
-  page.value = 1
-  updateRouterQuery()
-  getData()
-}, 800)
-
-const handleSelectedIds = (selectedIds) => {
-  console.log('Selected rows:', selectedIds)
+const handleDeleteEmployee = async (ids) => {
+  const idString = typeof ids === 'string' ? ids : ids.join(',')
+  try {
+    const response = await http.delete(listApi.Employees, { data: idString })
+    if (response.success) {
+      toast.add({
+        severity: 'success',
+        summary: 'Thành công',
+        detail: 'Đã xóa thành công',
+        life: 3000,
+        position: 'top-center',
+      })
+      getData()
+    }
+  } catch (error) {
+    console.error('Error:', error)
+    toast.add({
+      severity: 'error',
+      summary: 'Lỗi',
+      detail: error.message || 'Đã xảy ra lỗi',
+      life: 3000,
+      position: 'top-center',
+    })
+  }
 }
 
-const handleFilter = (filter) => {
-  contactTitle.value = filter.contactTitle
-  isActive.value = filter.isActive
-  gender.value = filter.gender
-  unitCode.value = filter.unitCode
+const handleChangeStatusEmployee = async (status, ids) => {
+  const idString = typeof ids === 'string' ? ids : ids.join(',')
+  try {
+    const response = await http.put(listApi.ChangeStatus, { status, ids: idString })
+    if (response.success) {
+      toast.add({
+        severity: 'success',
+        summary: 'Thành công',
+        detail: 'Đã thay đổi trạng thái thành công',
+        life: 3000,
+        position: 'top-center',
+      })
+      getData()
+    }
+  } catch (error) {
+    console.error('Error:', error)
+    toast.add({
+      severity: 'error',
+      summary: 'Lỗi',
+      detail: error.message || 'Đã xảy ra lỗi',
+      life: 3000,
+      position: 'top-center',
+    })
+  }
 }
 
 watch(
