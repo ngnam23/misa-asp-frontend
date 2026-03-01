@@ -484,10 +484,10 @@ watch(
 )
 
 watch(
-  () => props.newCode,
-  (newVal) => {
-    if (props.isOpen && newVal && (props.type === 'create' || props.type === 'double')) {
-      setFieldValue('employeeCode', newVal)
+  () => [props.newCode, props.type],
+  ([newCode, type]) => {
+    if (props.isOpen && newCode && (type === 'create' || type === 'double')) {
+      setFieldValue('employeeCode', newCode)
     }
   },
 )
