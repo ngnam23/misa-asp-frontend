@@ -318,17 +318,18 @@
 <script setup>
 import MsInputControl from '@/components/ms-input/MsInputControl.vue'
 import MsCheckboxControl from '@/components/ms-checkbox/MsCheckboxControl.vue'
-import { ref, onMounted, onUnmounted, watch } from 'vue'
+import { ref, watch } from 'vue'
 import MsTableSelectSearchControl from '@/components/ms-select/MsTableSelectSearchControl.vue'
 import { useForm } from 'vee-validate'
-import * as yup from 'yup'
 import MsInputDateControl from '@/components/ms-input/MsInputDateControl.vue'
 import MsRadioControl from '@/components/ms-radio/MsRadioControl.vue'
 import MsInputNumberControl from '@/components/ms-input/MsInputNumberControl.vue'
 import MsSelectSearchControl from '@/components/ms-select/MsSelectSearchControl.vue'
-import { useToast } from 'primevue'
+import { useToast } from 'primevue/usetoast'
 import http from '@/utils/http'
 import { listApi } from '@/constants/list-api'
+import { useDraggable } from '@/composables/useDraggable'
+import { useEmployeeValidation } from '@/composables/useEmployeeValidation'
 
 const props = defineProps({
   isOpen: {
@@ -365,60 +366,20 @@ const props = defineProps({
   },
 })
 
+const { schema, getEmployeeInitialValues } = useEmployeeValidation()
+
 const emit = defineEmits(['close', 'confirm', 'refresh'])
 
 const { setValues, handleSubmit, resetForm, setFieldValue, values } = useForm({
-  validationSchema: yup.object({
-    isCustomer: yup.boolean().nullable(),
-    isSupplier: yup.boolean().nullable(),
-    employeeCode: yup.string().required('Mã nhân viên trống'),
-    employeeName: yup.string().required('Tên nhân viên trống'),
-    contactTitle: yup.string().nullable(),
-    unitID: yup.string().required('Đơn vị trống').notOneOf([''], 'Đơn vị trống'),
-    dateOfBirth: yup.date().nullable(),
-    gender: yup.boolean().default(true),
-    cccdNumber: yup.string().nullable(),
-    dateOfIssuance: yup.date().nullable(),
-    issuingAuthority: yup.string().nullable(),
-    groupCustomerSupplier: yup.string().nullable(),
-    accountsReceivable: yup.string().nullable(),
-    accountsPayable: yup.string().nullable(),
-    salaryNegotiable: yup.number().nullable(),
-    salaryCoefficient: yup.number().nullable(),
-    salarySubjectInsuranceContributions: yup.number().nullable(),
-    loaiHopDong: yup.number().nullable(),
-    numberOfDependents: yup.number().nullable(),
-    bankNumber: yup.string().nullable(),
-    bankName: yup.string().nullable(),
-    bankAddress: yup.string().nullable(),
-    bankCity: yup.string().nullable(),
-    address: yup.string().nullable(),
-    phoneNumber: yup.string().nullable(),
-    landlinePhone: yup.string().nullable(),
-    email: yup.string().nullable(),
-  }),
-  initialValues: {
-    employeeCode:
-      props.type === 'create' || props.type === 'double'
-        ? props.newCode
-        : props.employeeDetail?.employeeCode,
-    isCustomer: false,
-    isSupplier: false,
-    gender: true,
-    salaryNegotiable: 0,
-    salaryCoefficient: 0.0,
-    salarySubjectInsuranceContributions: 0,
-    loaiHopDong: 0,
-    numberOfDependents: 0,
-  },
+  validationSchema: schema,
+  initialValues: getEmployeeInitialValues(props.type, props.newCode, props.employeeDetail),
   keepValuesOnUnmount: true,
 })
 
 const toast = useToast()
 const dialogRef = ref(null)
-const isDragging = ref(false)
-const position = ref({ x: 0, y: 0 })
-const dragOffset = ref({ x: 0, y: 0 })
+
+const { position, handleMouseDown } = useDraggable(dialogRef)
 
 const tabActive = ref(1)
 const tabs = ref([
@@ -492,136 +453,78 @@ watch(
   },
 )
 
-const handleMouseDown = (e) => {
-  if (!dialogRef.value) return
-
-  isDragging.value = true
-  const rect = dialogRef.value.getBoundingClientRect()
-  dragOffset.value = {
-    x: e.clientX - rect.left,
-    y: e.clientY - rect.top,
-  }
-}
-
-const handleMouseMove = (e) => {
-  if (!isDragging.value || !dialogRef.value) return
-
-  const viewportWidth = window.innerWidth
-  const viewportHeight = window.innerHeight
-  const dialogWidth = dialogRef.value.offsetWidth
-  const dialogHeight = dialogRef.value.offsetHeight
-
-  let newX = e.clientX - dragOffset.value.x - viewportWidth / 2 + dialogWidth / 2
-  let newY = e.clientY - dragOffset.value.y - viewportHeight / 2 + dialogHeight / 2
-
-  // Allow dragging to 4 corners - only keep header (60px) visible
-  const headerHeight = 60
-  newX = Math.max(-dialogWidth + headerHeight, Math.min(newX, dialogWidth - headerHeight))
-  newY = Math.max(-dialogHeight + headerHeight, Math.min(newY, dialogHeight - headerHeight))
-
-  position.value = { x: newX, y: newY }
-}
-
-const handleMouseUp = () => {
-  isDragging.value = false
-}
-
 const handleClose = () => {
   resetForm()
   emit('close')
 }
 
+// Hàm dùng chung để lưu dữ liệu lên Server
+const executeSaveAPI = async (values) => {
+  let submitValues = { ...values }
+
+  if (props.type === 'double') {
+    delete submitValues.employeeID
+  }
+
+  if (props.type === 'update') {
+    return await http.put(listApi.Employees, {
+      ...submitValues,
+      employeeID: props.employeeDetail.employeeID,
+    })
+  } else {
+    return await http.post(listApi.Employees, submitValues)
+  }
+}
+
+// Xử lý thông báo sau khi save
+const showSuccessMsg = () => {
+  toast.add({
+    severity: 'success',
+    summary: 'Thành công',
+    detail: `${props.type === 'update' ? 'Cập nhật' : 'Thêm'} nhân viên thành công`,
+    life: 3000,
+    position: 'top-center',
+  })
+}
+const showErrorMsg = (error) => {
+  console.log('error', error)
+  toast.add({
+    severity: 'error',
+    summary: 'Lỗi',
+    detail: error.message || 'Đã xảy ra lỗi',
+    life: 3000,
+    position: 'top-center',
+  })
+}
+
+// Cất & Thêm
 const handleConfirm = handleSubmit(async (values) => {
   try {
-    let submitValues = { ...values }
-
-    if (props.type === 'double') {
-      delete submitValues.employeeID
-    }
-
-    let response
-    if (props.type === 'update') {
-      response = await http.put(listApi.Employees, {
-        ...submitValues,
-        employeeID: props.employeeDetail.employeeID,
-      })
-    } else {
-      response = await http.post(listApi.Employees, submitValues)
-    }
+    const response = await executeSaveAPI(values)
     if (response.success) {
-      toast.add({
-        severity: 'success',
-        summary: 'Thành công',
-        detail: `${props.type === 'update' ? 'Cập nhật' : 'Thêm'} nhân viên thành công`,
-        life: 3000,
-        position: 'top-center',
-      })
+      showSuccessMsg()
       emit('refresh')
       resetForm()
       emit('confirm')
     }
   } catch (error) {
-    console.log('error', error)
-    toast.add({
-      severity: 'error',
-      summary: 'Lỗi',
-      detail: error.message || 'Đã xảy ra lỗi',
-      life: 3000,
-      position: 'top-center',
-    })
+    showErrorMsg(error)
   }
 })
 
+// Cất
 const handleConfirm2 = handleSubmit(async (values) => {
   try {
-    let submitValues = { ...values }
-
-    if (props.type === 'double') {
-      delete submitValues.employeeID
-    }
-
-    let response
-    if (props.type === 'update') {
-      response = await http.put(listApi.Employees, {
-        ...submitValues,
-        employeeID: props.employeeDetail.employeeID,
-      })
-    } else {
-      response = await http.post(listApi.Employees, submitValues)
-    }
+    const response = await executeSaveAPI(values)
     if (response.success) {
-      toast.add({
-        severity: 'success',
-        summary: 'Thành công',
-        detail: `${props.type === 'update' ? 'Cập nhật' : 'Thêm'} nhân viên thành công`,
-        life: 3000,
-        position: 'top-center',
-      })
+      showSuccessMsg()
       resetForm()
       emit('close')
       emit('refresh')
     }
   } catch (error) {
-    console.log('error', error)
-    toast.add({
-      severity: 'error',
-      summary: 'Lỗi',
-      detail: error.message || 'Đã xảy ra lỗi',
-      life: 3000,
-      position: 'top-center',
-    })
+    showErrorMsg(error)
   }
-})
-
-onMounted(() => {
-  document.addEventListener('mousemove', handleMouseMove)
-  document.addEventListener('mouseup', handleMouseUp)
-})
-
-onUnmounted(() => {
-  document.removeEventListener('mousemove', handleMouseMove)
-  document.removeEventListener('mouseup', handleMouseUp)
-  isDragging.value = false
 })
 </script>
 
