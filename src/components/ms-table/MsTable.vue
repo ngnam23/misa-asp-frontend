@@ -15,8 +15,8 @@
         >
           <span class="!truncate">{{ field.label }}</span>
         </th>
-        <th class="w-[120px] h-8 sticky right-0 z-20 bg-ef1 border-b border-l border-c7">
-          Chức năng
+        <th class="w-[120px] h-8 px-2.5 sticky right-0 z-20 bg-ef1 border-b border-l border-c7">
+          <div class="flex items-center justify-end">Chức năng</div>
         </th>
       </tr>
     </thead>
@@ -55,7 +55,9 @@
             }}</span></template
           >
         </td>
-        <td class="w-[120px] h-8 sticky bg-white right-0 z-20 border-b border-l border-c7"></td>
+        <td class="w-[120px] h-8 sticky bg-white right-0 z-20 border-b border-l border-c7">
+          <slot name="action" :row="row"></slot>
+        </td>
       </tr>
     </tbody>
   </table>

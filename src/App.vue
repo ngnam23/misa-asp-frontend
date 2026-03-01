@@ -7,7 +7,7 @@ import ConfirmDialog from 'primevue/confirmdialog'
 <template>
   <Toast />
   <ConfirmPopup group="popup" />
-  <ConfirmDialog group="dialog" class="custom-dialog">
+  <ConfirmDialog group="confirm-dialog" class="custom-dialog">
     <template #container="{ message, acceptCallback, rejectCallback }">
       <div class="p-8 rounded-[3px] max-w-[444px]">
         <div class="flex gap-x-4 items-center">

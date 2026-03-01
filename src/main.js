@@ -6,6 +6,7 @@ import 'primeicons/primeicons.css'
 import ToastService from 'primevue/toastservice'
 import Tooltip from 'primevue/tooltip'
 import ConfirmationService from 'primevue/confirmationservice'
+import DialogService from 'primevue/dialogservice'
 
 import '@/assets/styles/app.scss'
 import App from '@/App.vue'

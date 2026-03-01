@@ -1,7 +1,11 @@
 <template>
-  <div class="table-select" ref="selectRef">
+  <div class="flex flex-col gap-y-1 w-full relative" ref="selectRef">
+    <label v-if="label" class="text-xs font-semibold text-111">{{ label }}</label>
     <!-- Trigger -->
-    <div class="select-trigger" :class="{ open: isOpen, 'drop-up': dropUp }">
+    <div
+      class="select-trigger"
+      :class="{ '!border-[red]': errorMessage, open: isOpen, 'drop-up': dropUp }"
+    >
       <input
         ref="inputRef"
         class="select-trigger-input"
@@ -9,21 +13,19 @@
         :value="displayValue"
         @focus="onInputFocus"
         @input="onSearchInput"
+        @blur="handleBlur"
       />
       <div class="select-arrow" @click="toggleDropdown">
         <div :class="['icon-arrow-up-black icon', isOpen ? 'open' : '']"></div>
       </div>
     </div>
+    <!-- <p v-if="errorMessage" class="text-[red] text-xs font-normal line-clamp-1">
+      {{ errorMessage }}
+    </p> -->
 
     <!-- Dropdown -->
     <Transition :name="dropUp ? 'dropdown-up' : 'dropdown'">
-      <div
-        v-if="isOpen"
-        ref="dropdownRef"
-        class="select-dropdown"
-        :class="{ 'drop-up': dropUp }"
-        :style="{ width: dropdownWidth }"
-      >
+      <div v-if="isOpen" ref="dropdownRef" class="select-dropdown" :class="{ 'drop-up': dropUp }">
         <!-- Table Header -->
         <div class="table-header">
           <div
@@ -47,7 +49,7 @@
             :key="getOptionValue(option)"
             class="table-row"
             :class="{
-              selected: getOptionValue(option) === modelValue,
+              selected: getOptionValue(option) === value,
               highlighted: index === highlightedIndex,
             }"
             @click="selectOption(option)"
@@ -77,13 +79,10 @@
 </template>
 
 <script setup>
+import { useField } from 'vee-validate'
 import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 
 const props = defineProps({
-  modelValue: {
-    type: [String, Number, null],
-    default: null,
-  },
   columns: {
     type: Array,
     default: () => [],
@@ -100,13 +99,17 @@ const props = defineProps({
     type: String,
     default: 'label',
   },
-  dropdownWidth: {
+  label: {
     type: String,
-    default: 'max-content',
+    default: '',
+  },
+  name: {
+    type: String,
+    required: true,
   },
 })
 
-const emit = defineEmits(['update:modelValue', 'change'])
+const { value, errorMessage, handleBlur } = useField(() => props.name)
 
 const isOpen = ref(false)
 const dropUp = ref(false)
@@ -128,7 +131,7 @@ function getFieldValue(option, field) {
 
 // Computed
 const selectedOption = computed(() => {
-  return props.options.find((opt) => getOptionValue(opt) === props.modelValue) || null
+  return props.options.find((opt) => getOptionValue(opt) === value.value) || null
 })
 
 const displayValue = computed(() => {
@@ -194,9 +197,8 @@ function toggleDropdown() {
 }
 
 function selectOption(option) {
-  const value = getOptionValue(option)
-  emit('update:modelValue', value)
-  emit('change', value, option)
+  const selectedVal = getOptionValue(option)
+  value.value = selectedVal
   isSearching.value = false
   searchText.value = ''
   isOpen.value = false
@@ -254,14 +256,6 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-.table-select {
-  position: relative;
-  display: inline-block;
-  font-size: 13px;
-  font-weight: normal;
-  width: 100%;
-}
-
 /* ===== Trigger ===== */
 .select-trigger {
   display: flex;
@@ -426,8 +420,9 @@ onBeforeUnmount(() => {
 .empty-cell {
   width: 100%;
   text-align: center;
-  color: #999;
+  color: #111;
   font-style: normal;
+  font-weight: normal;
   padding: 10px;
   border-right: none;
 }

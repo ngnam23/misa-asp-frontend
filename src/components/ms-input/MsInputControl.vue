@@ -1,0 +1,38 @@
+<script setup>
+import { useField } from 'vee-validate'
+
+const props = defineProps({
+  name: {
+    type: String,
+    required: true,
+  },
+  label: String,
+  placeholder: {
+    type: String,
+    default: '',
+  },
+})
+
+const { value, errorMessage, handleBlur } = useField(props.name)
+</script>
+
+<template>
+  <div class="flex flex-col gap-y-1 w-full">
+    <label v-if="label" class="text-xs font-semibold text-111">{{ label }}</label>
+
+    <input
+      type="text"
+      v-model="value"
+      @blur="handleBlur"
+      :placeholder="placeholder"
+      :class="[
+        'h-[26px] pl-3 pr-2.5 text-[13px] outline-none font-normal w-full border border-bab bg-white rounded-[2px] focus:border-primary',
+        errorMessage && '!border-[red] focus:border-[red]',
+      ]"
+    />
+
+    <!-- <p v-if="errorMessage" class="text-[red] text-xs font-normal line-clamp-1">
+      {{ errorMessage }}
+    </p> -->
+  </div>
+</template>

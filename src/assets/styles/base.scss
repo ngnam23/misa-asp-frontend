@@ -26,7 +26,7 @@ body {
 
 ::-webkit-scrollbar {
   width: 6px;
-  height: 6px;
+  height: 8px;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #888;
@@ -40,7 +40,8 @@ body {
 }
 
 // Reset dialog
-.custom-dialog {
+.custom-dialog,
+.custom-dynamic-dialog {
   border-radius: 3px !important;
 
   .p-dialog-header {
@@ -52,4 +53,19 @@ body {
   .p-dialog-footer {
     padding: 0 32px 32px !important;
   }
+}
+
+.ms-input-date {
+  .p-datepicker input {
+    border: none !important;
+  }
+  .p-inputtext {
+    font-size: 13px !important;
+  }
+}
+.p-datepicker-day-view {
+  font-size: 13px !important;
+}
+.p-datepicker-day-selected {
+  background-color: var(--primary-color) !important;
 }

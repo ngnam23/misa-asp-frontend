@@ -1,10 +1,16 @@
 <template>
+  <DialogEmployee
+    :isOpen="isOpenEmployeeDialog"
+    title="Thông tin nhân viên"
+    @close="isOpenEmployeeDialog = false"
+  />
   <div class="w-[calc(100%-196px)] bg-ef1 pl-4">
     <div class="flex justify-between mt-3 pr-3">
       <div class="text-[20px] font-semibold">Nhân viên</div>
       <div class="flex items-center h-8 gap-x-[1px]">
         <div
           class="flex items-center justify-center h-full text-white py-2 px-3 rounded-tl-[30px] rounded-bl-[30px] bg-primary cursor-pointer hover:bg-35b"
+          @click="handleOpenDialogCreate"
         >
           Thêm
         </div>
@@ -67,7 +73,24 @@
               :rows="rows"
               key-field="employeeID"
               @update-selected-ids="handleSelectedIds"
-            />
+            >
+              <template #action="{ row }">
+                <div class="flex items-center justify-end px-2.5">
+                  <div class="text-[#0075c0] cursor-pointer py-1 px-2">Sửa</div>
+                  <row-select-btn
+                    :options="[
+                      { label: 'Nhân bản', value: 'double' },
+                      { label: 'Xóa', value: 'delete' },
+                      {
+                        label: `${row.isActive ? 'Ngừng sử dụng' : 'Sử dụng'}`,
+                        value: 'toggleStatus',
+                      },
+                    ]"
+                    @select="(option) => handleRowSelect(option, row)"
+                  />
+                </div>
+              </template>
+            </ms-table>
           </div>
           <div class="flex items-center py-2 justify-between">
             <span class="font-normal"
@@ -97,9 +120,13 @@ import { useConfirm } from 'primevue/useconfirm'
 import http from '@/utils/http'
 import { listApi } from '@/constants/list-api'
 import { useToast } from 'primevue/usetoast'
+import RowSelectBtn from './_components/RowSelectBtn.vue'
+import DialogEmployee from './_components/DialogEmployee.vue'
 
 const confirm = useConfirm()
 const toast = useToast()
+
+const isOpenEmployeeDialog = ref(false)
 
 const {
   rows,
@@ -145,7 +172,7 @@ const handleActionAll = (action) => {
   const labels = selectedIdsArray.value.map((id) => itemMap.get(id)).filter(Boolean)
 
   confirm.require({
-    group: 'dialog',
+    group: 'confirm-dialog',
     message: `Bạn có thực sự muốn ${action.label.toLowerCase()} Nhân viên <${labels.join(', ')}> không?`,
     icon: 'icon-exclamation-warning',
     acceptLabel: 'Có',
@@ -216,6 +243,31 @@ const handleChangeStatusEmployee = async (status, ids) => {
       position: 'top-center',
     })
   }
+}
+
+const handleRowSelect = (option, row) => {
+  if (option.value === 'delete') {
+    confirm.require({
+      group: 'confirm-dialog',
+      message: `Bạn có thực sự muốn xóa Nhân viên <${row.employeeCode}> không?`,
+      icon: 'icon-exclamation-warning',
+      acceptLabel: 'Có',
+      rejectLabel: 'Không',
+      acceptClass:
+        '!h-[30px] !px-4 !text-white !text-[13px] !bg-primary hover:!bg-[#35bf22] !rounded-[3px] !border-transparent',
+      rejectClass:
+        '!h-[30px] !px-4 !rounded-[3px] !text-[13px] !bg-white hover:!bg-[#d2d3d6] !border !border-[#8d9096] !text-111',
+      accept: () => {
+        handleDeleteEmployee([row.employeeID])
+      },
+    })
+  } else if (option.value === 'toggleStatus') {
+    handleChangeStatusEmployee(row.isActive ? 0 : 1, [row.employeeID])
+  }
+}
+
+const handleOpenDialogCreate = () => {
+  isOpenEmployeeDialog.value = true
 }
 
 watch(
