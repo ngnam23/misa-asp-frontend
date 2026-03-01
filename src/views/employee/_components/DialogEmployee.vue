@@ -13,14 +13,8 @@
           <div class="dialog-header" @mousedown="handleMouseDown">
             <h2 class="dialog-title">{{ title }}</h2>
             <div class="ml-5 flex gap-x-5">
-              <div class="flex gap-x-2 items-center">
-                <Checkbox v-model="isCustomer" input-id="isCustomer" binary />
-                <label class="font-normal" for="isCustomer">Là khách hàng</label>
-              </div>
-              <div class="flex gap-x-2 items-center">
-                <Checkbox v-model="isSupplier" input-id="isSupplier" binary />
-                <label class="font-normal" for="isSupplier">Là nhà cung cấp</label>
-              </div>
+              <MsCheckboxControl name="isCustomer" label="Là khách hàng" id="isCustomer" />
+              <MsCheckboxControl name="isSupplier" label="Là nhà cung cấp" id="isSupplier" />
             </div>
             <div class="dialog-actions">
               <div class="icon-help"></div>
@@ -62,7 +56,7 @@
                 <div class="w-full">
                   <MsInputControl label="Chức danh" name="contactTitle" />
                 </div>
-                <div v-if="isCustomer || isSupplier" class="w-full">
+                <div v-if="values.isCustomer || values.isSupplier" class="w-full">
                   <MsTableSelectSearchControl
                     label="Nhóm khách hàng, nhà cung cấp"
                     name="groupCustomerSupplier"
@@ -82,8 +76,8 @@
                     <div class="flex flex-col gap-y-1 w-full">
                       <label class="text-xs font-semibold text-111">Giới tính</label>
                       <div class="flex items-center gap-x-4">
-                        <MsRadioControl label="Nam" id="male" name="gender" :value="1" />
-                        <MsRadioControl label="Nữ" id="female" name="gender" :value="0" />
+                        <MsRadioControl label="Nam" id="male" name="gender" :value="true" />
+                        <MsRadioControl label="Nữ" id="female" name="gender" :value="false" />
                       </div>
                     </div>
                   </div>
@@ -102,8 +96,11 @@
                 <div class="grid grid-cols-1">
                   <MsInputControl label="Nơi cấp" name="issuingAuthority" />
                 </div>
-                <div v-if="isCustomer || isSupplier" class="grid grid-cols-5 gap-x-1.5">
-                  <div v-if="isCustomer" class="col-span-2">
+                <div
+                  v-if="values.isCustomer || values.isSupplier"
+                  class="grid grid-cols-5 gap-x-1.5"
+                >
+                  <div v-if="values.isCustomer" class="col-span-2">
                     <MsTableSelectSearchControl
                       label="TK công nợ phải thu"
                       name="accountsReceivable"
@@ -122,7 +119,7 @@
                       display-field="value"
                     />
                   </div>
-                  <div v-if="isSupplier" class="col-span-2">
+                  <div v-if="values.isSupplier" class="col-span-2">
                     <MsTableSelectSearchControl
                       label="TK công nợ phải trả"
                       name="accountsPayable"
@@ -320,7 +317,7 @@
 
 <script setup>
 import MsInputControl from '@/components/ms-input/MsInputControl.vue'
-import { Checkbox } from 'primevue'
+import MsCheckboxControl from '@/components/ms-checkbox/MsCheckboxControl.vue'
 import { ref, onMounted, onUnmounted, watch } from 'vue'
 import MsTableSelectSearchControl from '@/components/ms-select/MsTableSelectSearchControl.vue'
 import { useForm } from 'vee-validate'
@@ -329,6 +326,9 @@ import MsInputDateControl from '@/components/ms-input/MsInputDateControl.vue'
 import MsRadioControl from '@/components/ms-radio/MsRadioControl.vue'
 import MsInputNumberControl from '@/components/ms-input/MsInputNumberControl.vue'
 import MsSelectSearchControl from '@/components/ms-select/MsSelectSearchControl.vue'
+import { useToast } from 'primevue'
+import http from '@/utils/http'
+import { listApi } from '@/constants/list-api'
 
 const props = defineProps({
   isOpen: {
@@ -351,21 +351,32 @@ const props = defineProps({
     type: String,
     default: 'Cất',
   },
+  employeeDetail: {
+    type: Object,
+    default: null,
+  },
+  type: {
+    type: String,
+    default: 'create',
+  },
+  newCode: {
+    type: String,
+    default: '',
+  },
 })
 
-const emit = defineEmits(['close', 'confirm', 'confirm2'])
+const emit = defineEmits(['close', 'confirm', 'refresh'])
 
-const isCustomer = ref(false)
-const isSupplier = ref(false)
-
-const { setValues, handleSubmit, resetForm, setFieldValue } = useForm({
+const { setValues, handleSubmit, resetForm, setFieldValue, values } = useForm({
   validationSchema: yup.object({
+    isCustomer: yup.boolean().nullable(),
+    isSupplier: yup.boolean().nullable(),
     employeeCode: yup.string().required('Mã nhân viên trống'),
     employeeName: yup.string().required('Tên nhân viên trống'),
     contactTitle: yup.string().nullable(),
     unitID: yup.string().required('Đơn vị trống').notOneOf([''], 'Đơn vị trống'),
     dateOfBirth: yup.date().nullable(),
-    gender: yup.number().default(1),
+    gender: yup.boolean().default(true),
     cccdNumber: yup.string().nullable(),
     dateOfIssuance: yup.date().nullable(),
     issuingAuthority: yup.string().nullable(),
@@ -387,7 +398,13 @@ const { setValues, handleSubmit, resetForm, setFieldValue } = useForm({
     email: yup.string().nullable(),
   }),
   initialValues: {
-    gender: 1,
+    employeeCode:
+      props.type === 'create' || props.type === 'double'
+        ? props.newCode
+        : props.employeeDetail?.employeeCode,
+    isCustomer: false,
+    isSupplier: false,
+    gender: true,
     salaryNegotiable: 0,
     salaryCoefficient: 0.0,
     salarySubjectInsuranceContributions: 0,
@@ -397,6 +414,7 @@ const { setValues, handleSubmit, resetForm, setFieldValue } = useForm({
   keepValuesOnUnmount: true,
 })
 
+const toast = useToast()
 const dialogRef = ref(null)
 const isDragging = ref(false)
 const position = ref({ x: 0, y: 0 })
@@ -418,21 +436,61 @@ const tabs = ref([
   },
 ])
 
-watch(isCustomer, (newVal) => {
-  if (newVal) {
-    setFieldValue('accountsReceivable', '35ADA107-3F12-F111-A545-34CFF6887D3F')
-  } else {
-    setFieldValue('accountsReceivable', null)
-  }
-})
+watch(
+  () => values.isCustomer,
+  (newVal) => {
+    if (newVal) {
+      setFieldValue('accountsReceivable', '35ADA107-3F12-F111-A545-34CFF6887D3F')
+    } else {
+      setFieldValue('accountsReceivable', null)
+    }
+  },
+)
 
-watch(isSupplier, (newVal) => {
-  if (newVal) {
-    setFieldValue('accountsPayable', '985C551C-3F12-F111-A545-34CFF6887D3F')
-  } else {
-    setFieldValue('accountsPayable', null)
-  }
-})
+watch(
+  () => values.isSupplier,
+  (newVal) => {
+    if (newVal) {
+      setFieldValue('accountsPayable', '985C551C-3F12-F111-A545-34CFF6887D3F')
+    } else {
+      setFieldValue('accountsPayable', null)
+    }
+  },
+)
+
+watch(
+  () => props.isOpen,
+  (isOpen) => {
+    if (isOpen) {
+      if (props.type === 'create') {
+        setFieldValue('employeeCode', props.newCode)
+      } else if (props.type === 'update' || props.type === 'double') {
+        if (props.employeeDetail) {
+          setValues({
+            ...props.employeeDetail,
+            dateOfBirth: props.employeeDetail.dateOfBirth
+              ? new Date(props.employeeDetail.dateOfBirth)
+              : null,
+            dateOfIssuance: props.employeeDetail.dateOfIssuance
+              ? new Date(props.employeeDetail.dateOfIssuance)
+              : null,
+            employeeCode:
+              props.type === 'double' ? props.newCode : props.employeeDetail.employeeCode,
+          })
+        }
+      }
+    }
+  },
+)
+
+watch(
+  () => props.newCode,
+  (newVal) => {
+    if (props.isOpen && newVal && (props.type === 'create' || props.type === 'double')) {
+      setFieldValue('employeeCode', newVal)
+    }
+  },
+)
 
 const handleMouseDown = (e) => {
   if (!dialogRef.value) return
@@ -469,15 +527,90 @@ const handleMouseUp = () => {
 }
 
 const handleClose = () => {
+  resetForm()
   emit('close')
 }
 
-const handleConfirm = () => {
-  emit('confirm')
-}
+const handleConfirm = handleSubmit(async (values) => {
+  try {
+    let submitValues = { ...values }
 
-const handleConfirm2 = handleSubmit((values) => {
-  console.log('values', { ...values, isCustomer: isCustomer.value, isSupplier: isSupplier.value })
+    if (props.type === 'double') {
+      delete submitValues.employeeID
+    }
+
+    let response
+    if (props.type === 'update') {
+      response = await http.put(listApi.Employees, {
+        ...submitValues,
+        employeeID: props.employeeDetail.employeeID,
+      })
+    } else {
+      response = await http.post(listApi.Employees, submitValues)
+    }
+    if (response.success) {
+      toast.add({
+        severity: 'success',
+        summary: 'Thành công',
+        detail: `${props.type === 'update' ? 'Cập nhật' : 'Thêm'} nhân viên thành công`,
+        life: 3000,
+        position: 'top-center',
+      })
+      emit('refresh')
+      resetForm()
+      emit('confirm')
+    }
+  } catch (error) {
+    console.log('error', error)
+    toast.add({
+      severity: 'error',
+      summary: 'Lỗi',
+      detail: error.message || 'Đã xảy ra lỗi',
+      life: 3000,
+      position: 'top-center',
+    })
+  }
+})
+
+const handleConfirm2 = handleSubmit(async (values) => {
+  try {
+    let submitValues = { ...values }
+
+    if (props.type === 'double') {
+      delete submitValues.employeeID
+    }
+
+    let response
+    if (props.type === 'update') {
+      response = await http.put(listApi.Employees, {
+        ...submitValues,
+        employeeID: props.employeeDetail.employeeID,
+      })
+    } else {
+      response = await http.post(listApi.Employees, submitValues)
+    }
+    if (response.success) {
+      toast.add({
+        severity: 'success',
+        summary: 'Thành công',
+        detail: `${props.type === 'update' ? 'Cập nhật' : 'Thêm'} nhân viên thành công`,
+        life: 3000,
+        position: 'top-center',
+      })
+      resetForm()
+      emit('close')
+      emit('refresh')
+    }
+  } catch (error) {
+    console.log('error', error)
+    toast.add({
+      severity: 'error',
+      summary: 'Lỗi',
+      detail: error.message || 'Đã xảy ra lỗi',
+      life: 3000,
+      position: 'top-center',
+    })
+  }
 })
 
 onMounted(() => {

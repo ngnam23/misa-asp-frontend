@@ -1,4 +1,5 @@
 export const listApi = {
   Employees: '/Employees',
-  ChangeStatus: '/Employees/ChangeStatus',
+  ChangeStatus: '/Employees/status',
+  NewCode: '/Employees/new-code',
 }

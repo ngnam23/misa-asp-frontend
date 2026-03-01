@@ -1,8 +1,13 @@
 <template>
   <DialogEmployee
     :isOpen="isOpenEmployeeDialog"
+    :employeeDetail="employeeDetail"
+    :type="type"
+    :newCode="newCode"
     title="Thông tin nhân viên"
     @close="isOpenEmployeeDialog = false"
+    @refresh="getData"
+    @confirm="handleSaveAndAdd"
   />
   <div class="w-[calc(100%-196px)] bg-ef1 pl-4">
     <div class="flex justify-between mt-3 pr-3">
@@ -76,7 +81,12 @@
             >
               <template #action="{ row }">
                 <div class="flex items-center justify-end px-2.5">
-                  <div class="text-[#0075c0] cursor-pointer py-1 px-2">Sửa</div>
+                  <div
+                    class="text-[#0075c0] cursor-pointer py-1 px-2"
+                    @click="handleOpenDialogToUpdate(row.employeeID)"
+                  >
+                    Sửa
+                  </div>
                   <row-select-btn
                     :options="[
                       { label: 'Nhân bản', value: 'double' },
@@ -219,6 +229,17 @@ const handleDeleteEmployee = async (ids) => {
   }
 }
 
+const getNewCode = async () => {
+  try {
+    const response = await http.get(listApi.NewCode)
+    if (response.success) {
+      return response.data
+    }
+  } catch (error) {
+    return ''
+  }
+}
+
 const handleChangeStatusEmployee = async (status, ids) => {
   const idString = typeof ids === 'string' ? ids : ids.join(',')
   try {
@@ -263,11 +284,48 @@ const handleRowSelect = (option, row) => {
     })
   } else if (option.value === 'toggleStatus') {
     handleChangeStatusEmployee(row.isActive ? 0 : 1, [row.employeeID])
+  } else if (option.value === 'double') {
+    handleOpenDialogToDouble(row.employeeID)
   }
 }
 
-const handleOpenDialogCreate = () => {
+const handleSaveAndAdd = async () => {
+  newCode.value = await getNewCode()
+  type.value = 'create'
+}
+
+const handleOpenDialogCreate = async () => {
+  newCode.value = await getNewCode()
+  type.value = 'create'
   isOpenEmployeeDialog.value = true
+}
+
+const employeeDetail = ref(null)
+const type = ref('create')
+const newCode = ref('')
+
+const handleOpenDialogToUpdate = async (employeeID) => {
+  await getEmployeeDetail(employeeID)
+  type.value = 'update'
+  isOpenEmployeeDialog.value = true
+}
+
+const handleOpenDialogToDouble = async (employeeID) => {
+  await getEmployeeDetail(employeeID)
+  newCode.value = await getNewCode()
+  type.value = 'double'
+  isOpenEmployeeDialog.value = true
+}
+
+const getEmployeeDetail = async (employeeID) => {
+  try {
+    const response = await http.get(`${listApi.Employees}/${employeeID}`)
+    if (response.success) {
+      employeeDetail.value = response.data
+    }
+  } catch (error) {
+    employeeDetail.value = null
+  }
 }
 
 watch(

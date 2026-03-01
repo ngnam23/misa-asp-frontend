@@ -69,3 +69,8 @@ body {
 .p-datepicker-day-selected {
   background-color: var(--primary-color) !important;
 }
+
+.p-datepicker-panel {
+  border-radius: 2px !important;
+  box-shadow: none !important;
+}
