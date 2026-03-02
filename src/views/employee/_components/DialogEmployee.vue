@@ -272,10 +272,10 @@
                     <div class="col-span-3">
                       <MsInputControl name="phoneNumber" label="ĐT di động" />
                     </div>
-                    <div class="col-span-6">
+                    <div class="col-span-5">
                       <MsInputControl name="landlinePhone" label="ĐT cố định" />
                     </div>
-                    <div class="col-span-2">
+                    <div class="col-span-3">
                       <MsInputControl name="email" label="Email" />
                     </div>
                   </div>
