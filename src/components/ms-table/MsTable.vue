@@ -120,4 +120,10 @@ const handleRowSelect = () => {
   width: 100%;
   table-layout: fixed;
 }
+tr:hover th {
+  cursor: pointer;
+}
+tr:hover td {
+  background-color: #f2f9ff;
+}
 </style>

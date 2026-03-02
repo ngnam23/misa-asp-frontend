@@ -3,6 +3,10 @@ import { debounce } from '@/utils/debounce'
 import http from '@/utils/http'
 import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import ExcelJS from 'exceljs'
+import { saveAs } from 'file-saver'
+import { EMPLOYEE_FIELDS } from '@/constants/common'
+import { formatDateDDMMYYYY } from '@/utils/formatter'
 
 export const useEmployeeTable = () => {
   const route = useRoute()
@@ -71,6 +75,75 @@ export const useEmployeeTable = () => {
     }
   }
 
+  const handleExport = async () => {
+    const response = await http.get(listApi.Employees, {
+      params: {
+        pageSize: totalItems.value,
+        page: 1,
+        keyword: keyword.value,
+        contactTitle: contactTitle.value,
+        isActive: +isActive.value === -1 ? null : Boolean(isActive.value),
+        gender: +gender.value === -1 ? null : Boolean(gender.value),
+        unitCode: unitCode.value === '' ? null : unitCode.value,
+      },
+    })
+    if (response.success) {
+      const workbook = new ExcelJS.Workbook()
+      const worksheet = workbook.addWorksheet('Danh sách nhân viên')
+      worksheet.columns = EMPLOYEE_FIELDS.map((field) => ({
+        header: field.label,
+        key: field.key,
+        width: Math.round(field.width / 10),
+      }))
+
+      response.data.data.forEach((employee) => {
+        worksheet.addRow({
+          ...employee,
+          gender: employee.gender ? 'Nam' : 'Nữ',
+          isCustomer: employee.isCustomer ? 'Có' : 'Không',
+          isSupplier: employee.isSupplier ? 'Có' : 'Không',
+          isActive: employee.isActive ? 'Hoạt động' : 'Ngừng hoạt động',
+          dateOfBirth: employee.dateOfBirth ? formatDateDDMMYYYY(employee.dateOfBirth) : '',
+          createdDate: employee.createdDate ? formatDateDDMMYYYY(employee.createdDate) : '',
+          modifiedDate: employee.modifiedDate ? formatDateDDMMYYYY(employee.modifiedDate) : '',
+          dateOfIssuance: employee.dateOfIssuance
+            ? formatDateDDMMYYYY(employee.dateOfIssuance)
+            : '',
+        })
+      })
+      worksheet.eachRow((row) => {
+        row.height = 22 // default height
+      })
+      const headerRow = worksheet.getRow(1)
+      headerRow.height = 26
+      headerRow.eachCell({ includeEmpty: true }, (cell) => {
+        cell.font = { bold: true }
+        cell.alignment = { vertical: 'middle', horizontal: 'left' }
+        cell.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FFEFEFEF' },
+        }
+      })
+      worksheet.eachRow((row) => {
+        row.eachCell((cell) => {
+          cell.border = {
+            top: { style: 'thin' },
+            left: { style: 'thin' },
+            bottom: { style: 'thin' },
+            right: { style: 'thin' },
+          }
+        })
+      })
+
+      const buffer = await workbook.xlsx.writeBuffer()
+      const blob = new Blob([buffer], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8',
+      })
+      saveAs(blob, `DanhSachNhanVien_${new Date().getTime()}.xlsx`)
+    }
+  }
+
   return {
     rows,
     totalItems,
@@ -85,5 +158,6 @@ export const useEmployeeTable = () => {
     updateRouterQuery,
     debounceGetData,
     handleFilter,
+    handleExport,
   }
 }

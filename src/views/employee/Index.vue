@@ -57,6 +57,7 @@
             :key="item.icon"
             class="px-1 flex items-center justify-center"
             :title="item.label"
+            @click="handleActionHead(item)"
           >
             <div
               :class="[item.icon, 'cursor-pointer', actionHeadIndex === index ? 'active' : '']"
@@ -121,9 +122,9 @@ import { useEmployeeDialog } from '@/composables/useEmployeeDialog'
 import { useEmployeeActions } from '@/composables/useEmployeeActions'
 
 const listActionHead = [
-  { label: 'Lấy lại dữ liệu', icon: 'icon-refresh' },
-  { label: 'Xuất ra Excel', icon: 'icon-excel' },
-  { label: 'Tùy chỉnh giao diện', icon: 'icon-setting' },
+  { label: 'Lấy lại dữ liệu', icon: 'icon-refresh', type: 'refresh' },
+  { label: 'Xuất ra Excel', icon: 'icon-excel', type: 'export' },
+  { label: 'Tùy chỉnh giao diện', icon: 'icon-setting', type: 'setting' },
 ]
 
 const batchActionOptions = [
@@ -152,6 +153,7 @@ const {
   updateRouterQuery,
   debounceGetData,
   handleFilter,
+  handleExport,
 } = useEmployeeTable()
 
 const {
@@ -178,6 +180,24 @@ const { handleActionAll, handleRowSelect } = useEmployeeActions(
   getData,
   handleOpenDialogToDouble,
 )
+
+const handleActionHead = (item) => {
+  switch (item.type) {
+    case 'refresh':
+      getData()
+      break
+    case 'export':
+      handleExport()
+      break
+    case 'setting':
+      handleSetting()
+      break
+  }
+}
+
+const handleSetting = () => {
+  console.log('setting')
+}
 
 watch(
   [page, contactTitle, isActive, gender, unitCode],
