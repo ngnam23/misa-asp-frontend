@@ -71,7 +71,7 @@
         <div class="min-w-full h-full overflow-x-auto">
           <div class="h-[calc(100%-42px)] overflow-y-auto">
             <ms-table
-              :fields="EMPLOYEE_FIELDS"
+              :fields="fields.filter((field) => field.display)"
               :rows="rows"
               key-field="employeeID"
               @update-selected-ids="handleSelectedIds"
@@ -105,6 +105,10 @@
       </div>
     </div>
   </div>
+  <DrawerCustomColumn
+    :isOpen="isOpenCustomColumnDrawer"
+    @close="isOpenCustomColumnDrawer = false"
+  />
 </template>
 
 <script setup>
@@ -116,10 +120,11 @@ import PaginationTable from './_components/PaginationTable.vue'
 import ModalFilter from './_components/ModalFilter.vue'
 import RowSelectBtn from './_components/RowSelectBtn.vue'
 import DialogEmployee from './_components/DialogEmployee.vue'
-import { EMPLOYEE_FIELDS, PAGE_SIZE_OPTIONS } from '@/constants/common'
+import { PAGE_SIZE_OPTIONS } from '@/constants/common'
 import { useEmployeeTable } from '@/composables/useEmployeeTable'
 import { useEmployeeDialog } from '@/composables/useEmployeeDialog'
 import { useEmployeeActions } from '@/composables/useEmployeeActions'
+import DrawerCustomColumn from './_components/DrawerCustomColumn.vue'
 
 const listActionHead = [
   { label: 'Lấy lại dữ liệu', icon: 'icon-refresh', type: 'refresh' },
@@ -149,11 +154,13 @@ const {
   isActive,
   gender,
   unitCode,
+  fields,
   getData,
   updateRouterQuery,
   debounceGetData,
   handleFilter,
   handleExport,
+  updateFields,
 } = useEmployeeTable()
 
 const {
@@ -166,6 +173,8 @@ const {
   handleOpenDialogToDouble,
   handleSaveAndAdd,
 } = useEmployeeDialog()
+
+const isOpenCustomColumnDrawer = ref(false)
 
 const selectedIdsArray = ref([])
 const actionHeadIndex = ref(null)
@@ -196,7 +205,7 @@ const handleActionHead = (item) => {
 }
 
 const handleSetting = () => {
-  console.log('setting')
+  isOpenCustomColumnDrawer.value = true
 }
 
 watch(

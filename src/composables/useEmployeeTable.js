@@ -8,6 +8,13 @@ import { saveAs } from 'file-saver'
 import { EMPLOYEE_FIELDS } from '@/constants/common'
 import { formatDateDDMMYYYY } from '@/utils/formatter'
 
+const fields = ref(JSON.parse(localStorage.getItem('employeeFields')) || [...EMPLOYEE_FIELDS])
+
+const updateFields = (newFields) => {
+  fields.value = [...newFields]
+  localStorage.setItem('employeeFields', JSON.stringify(fields.value))
+}
+
 export const useEmployeeTable = () => {
   const route = useRoute()
   const router = useRouter()
@@ -90,11 +97,13 @@ export const useEmployeeTable = () => {
     if (response.success) {
       const workbook = new ExcelJS.Workbook()
       const worksheet = workbook.addWorksheet('Danh sách nhân viên')
-      worksheet.columns = EMPLOYEE_FIELDS.map((field) => ({
-        header: field.label,
-        key: field.key,
-        width: Math.round(field.width / 10),
-      }))
+      worksheet.columns = fields.value
+        .filter((field) => field.display)
+        .map((field) => ({
+          header: field.label,
+          key: field.key,
+          width: Math.round(field.width / 10),
+        }))
 
       response.data.data.forEach((employee) => {
         worksheet.addRow({
@@ -154,10 +163,12 @@ export const useEmployeeTable = () => {
     isActive,
     gender,
     unitCode,
+    fields,
     getData,
     updateRouterQuery,
     debounceGetData,
     handleFilter,
     handleExport,
+    updateFields,
   }
 }

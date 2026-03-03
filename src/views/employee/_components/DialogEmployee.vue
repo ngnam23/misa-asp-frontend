@@ -44,8 +44,23 @@
                     ]"
                     :options="[
                       {
+                        unitID: '24e7523b-a416-f111-a54b-34cff6887d3f',
+                        value: 'HCNS',
+                        name: 'Phòng hành chính nhân sự',
+                      },
+                      {
+                        unitID: '25e7523b-a416-f111-a54b-34cff6887d3f',
+                        value: 'PTSP',
+                        name: 'Phòng phát triển sản phẩm',
+                      },
+                      {
+                        unitID: '26e7523b-a416-f111-a54b-34cff6887d3f',
+                        value: 'TK',
+                        name: 'Phòng thiết kế',
+                      },
+                      {
                         unitID: 'ad5b0a4f-c713-f111-a546-34cff6887d3f',
-                        value: '5vf4ayanbef8',
+                        value: 'FS',
                         name: 'Fresher ASP',
                       },
                     ]"

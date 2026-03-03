@@ -49,6 +49,11 @@
           <template v-else-if="field.key === 'isCustomer' || field.key === 'isSupplier'">
             <Checkbox :modelValue="row[field.key]" size="small" disabled binary />
           </template>
+          <template v-else-if="field.key === 'bankNumber' || field.key === 'bankName'">
+            <span class="!truncate line-clamp-1">{{
+              row['banks'].length > 0 ? row['banks'][0][field.key] : ''
+            }}</span>
+          </template>
           <template v-else
             ><span class="!truncate line-clamp-1">{{
               field.type === 'date' ? formatDateDDMMYYYY(row[field.key]) : row[field.key]

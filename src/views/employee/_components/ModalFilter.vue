@@ -20,7 +20,23 @@
                   ]"
                   :options="[
                     {
-                      value: '5vf4ayanbef8',
+                      unitID: '24e7523b-a416-f111-a54b-34cff6887d3f',
+                      value: 'HCNS',
+                      name: 'Phòng hành chính nhân sự',
+                    },
+                    {
+                      unitID: '25e7523b-a416-f111-a54b-34cff6887d3f',
+                      value: 'PTSP',
+                      name: 'Phòng phát triển sản phẩm',
+                    },
+                    {
+                      unitID: '26e7523b-a416-f111-a54b-34cff6887d3f',
+                      value: 'TK',
+                      name: 'Phòng thiết kế',
+                    },
+                    {
+                      unitID: 'ad5b0a4f-c713-f111-a546-34cff6887d3f',
+                      value: 'FS',
                       name: 'Fresher ASP',
                     },
                   ]"
@@ -68,7 +84,7 @@
           </div>
           <div class="my-5 h-[1px] w-full bg-e0e"></div>
           <div class="flex justify-between">
-            <ms-button label="Đặt lại" type="secondary" />
+            <ms-button label="Đặt lại" type="secondary" @click="handleReset" />
             <ms-button label="Lọc" @click="handleFilter" />
           </div>
         </div>
@@ -121,6 +137,13 @@ const handleFilter = () => {
     contactTitle: contactTitle.value,
   })
   isOpen.value = false
+}
+
+const handleReset = () => {
+  contactTitle.value = ''
+  isActive.value = -1
+  gender.value = -1
+  unitCode.value = ''
 }
 
 onMounted(() => {

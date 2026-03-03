@@ -27,6 +27,7 @@ export default {
         bab: '#babec5',
         c9cd: '#c9ccd2',
         e5f: '#e5f3ff',
+        '007': '#0075c0',
       },
     },
   },
