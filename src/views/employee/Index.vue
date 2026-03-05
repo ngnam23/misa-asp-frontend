@@ -179,6 +179,10 @@ const batchActionOptions = [
   { label: 'Ngừng sử dụng hàng loạt', value: 'unActiveAll' },
 ]
 
+/**
+ * Lấy danh sách các tùy chọn hành động cho từng dòng dữ liệu trong bảng
+ * @param {Object} row - Đối tượng dữ liệu của một nhân viên
+ */
 const getRowOptions = (row) => [
   { label: 'Nhân bản', value: 'double' },
   { label: 'Xóa', value: 'delete' },
@@ -223,6 +227,10 @@ const isOpenCustomColumnDrawer = ref(false)
 const selectedIdsArray = ref([])
 const actionHeadIndex = ref(null)
 
+/**
+ * Cập nhật danh sách các ID nhân viên đang được chọn trong bảng
+ * @param {Array} selectedIds - Mảng chứa các ID nhân viên
+ */
 const handleSelectedIds = (selectedIds) => {
   selectedIdsArray.value = selectedIds
 }
@@ -234,6 +242,10 @@ const { handleActionAll, handleRowSelect } = useEmployeeActions(
   handleOpenDialogToDouble,
 )
 
+/**
+ * Xử lý các hành động trên thanh công cụ phía trên bảng (nạp lại, xuất excel, cài đặt)
+ * @param {Object} item - Đối tượng hành động được click
+ */
 const handleActionHead = (item) => {
   switch (item.type) {
     case 'refresh':
@@ -248,10 +260,16 @@ const handleActionHead = (item) => {
   }
 }
 
+/**
+ * Mở drawer tùy chỉnh các cột hiển thị trong bảng
+ */
 const handleSetting = () => {
   isOpenCustomColumnDrawer.value = true
 }
 
+/**
+ * Xóa bỏ tất cả các điều kiện lọc và đưa về trạng thái mặc định
+ */
 const handleResetAllFilters = () => {
   unitCode.value = ''
   contactTitle.value = ''
@@ -281,6 +299,10 @@ watch(keyword, () => {
   debounceGetData()
 })
 
+/**
+ * Xử lý sự kiện nhấn phím tắt hệ thống
+ * @param {KeyboardEvent} event - Đối tượng sự kiện phím
+ */
 const handleKeyDown = (event) => {
   if (event.ctrlKey && event.key === '1') {
     event.preventDefault()

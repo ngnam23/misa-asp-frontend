@@ -10,11 +10,19 @@ import { formatDateDDMMYYYY } from '@/utils/formatter'
 
 const fields = ref(JSON.parse(localStorage.getItem('employeeFields')) || [...EMPLOYEE_FIELDS])
 
+/**
+ * Cập nhật danh sách các cột hiển thị và lưu vào localStorage
+ * @param {Array} newFields - Danh sách các trường thông tin mới
+ */
 const updateFields = (newFields) => {
   fields.value = [...newFields]
   localStorage.setItem('employeeFields', JSON.stringify(fields.value))
 }
 
+/**
+ * Composable quản lý logic cho bảng nhân viên (phân trang, tìm kiếm, lọc, export)
+ * @returns {Object} Các state và phương thức xử lý bảng nhân viên
+ */
 export const useEmployeeTable = () => {
   const route = useRoute()
   const router = useRouter()
@@ -29,6 +37,9 @@ export const useEmployeeTable = () => {
   const gender = ref(+route.query.gender === 0 ? 0 : +route.query.gender || -1)
   const unitCode = ref(route.query.unitCode || '')
 
+  /**
+   * Cập nhật các tham số trên URL dựa trên trạng thái hiện tại
+   */
   const updateRouterQuery = () => {
     router.push({
       name: 'employee',
@@ -44,12 +55,19 @@ export const useEmployeeTable = () => {
     })
   }
 
+  /**
+   * Hàm debounce gọi API lấy dữ liệu để tránh gọi liên tục khi người dùng gõ tìm kiếm
+   */
   const debounceGetData = debounce(() => {
     page.value = 1
     updateRouterQuery()
     getData()
   }, 800)
 
+  /**
+   * Xử lý khi có thay đổi bộ lọc từ giao diện
+   * @param {Object} filter - Đối tượng chứa các giá trị lọc mới
+   */
   const handleFilter = (filter) => {
     page.value = 1
     contactTitle.value = filter.contactTitle
@@ -58,6 +76,9 @@ export const useEmployeeTable = () => {
     unitCode.value = filter.unitCode
   }
 
+  /**
+   * Gọi API lấy danh sách nhân viên từ server
+   */
   const getData = async () => {
     try {
       const response = await http.get(listApi.Employees, {
@@ -82,6 +103,9 @@ export const useEmployeeTable = () => {
     }
   }
 
+  /**
+   * Xử lý xuất danh sách nhân viên ra file Excel
+   */
   const handleExport = async () => {
     const response = await http.get(listApi.Employees, {
       params: {
