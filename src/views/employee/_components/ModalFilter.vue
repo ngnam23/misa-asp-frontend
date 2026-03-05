@@ -94,7 +94,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
 import MsSelectSearch from '@/components/ms-select/MsSelectSearch.vue'
 import MsButton from '@/components/ms-button/MsButton.vue'
 import MsTableSelectSearch from '@/components/ms-select/MsTableSelectSearch.vue'
@@ -145,6 +145,16 @@ const handleReset = () => {
   gender.value = -1
   unitCode.value = ''
 }
+
+watch(
+  () => route.query,
+  () => {
+    contactTitle.value = route.query.contactTitle || ''
+    isActive.value = +route.query.isActive === 0 ? 0 : +route.query.isActive || -1
+    gender.value = +route.query.gender === 0 ? 0 : +route.query.gender || -1
+    unitCode.value = route.query.unitCode || ''
+  },
+)
 
 onMounted(() => {
   document.addEventListener('mousedown', handleClickOutside)
