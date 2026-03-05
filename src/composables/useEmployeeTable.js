@@ -162,8 +162,8 @@ export const useEmployeeTable = () => {
           fgColor: { argb: 'FFEFEFEF' },
         }
       })
-      worksheet.eachRow((row) => {
-        row.eachCell((cell) => {
+      worksheet.eachRow({ includeEmpty: true }, (row) => {
+        row.eachCell({ includeEmpty: true }, (cell) => {
           cell.border = {
             top: { style: 'thin' },
             left: { style: 'thin' },
