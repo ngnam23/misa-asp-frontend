@@ -17,6 +17,7 @@
       <div class="text-[20px] font-semibold">Nhân viên</div>
       <div class="flex items-center h-8 gap-x-[1px]">
         <div
+          title="Thêm (Ctrl + 1)"
           class="flex items-center justify-center h-full text-white py-2 px-3 rounded-tl-[30px] rounded-bl-[30px] bg-primary cursor-pointer hover:bg-35b"
           @click="handleOpenDialogCreate"
         >
@@ -152,7 +153,7 @@
 </template>
 
 <script setup>
-import { nextTick, onMounted, ref, watch } from 'vue'
+import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import MsSelect from '@/components/ms-select/MsSelect.vue'
 import MsTable from '@/components/ms-table/MsTable.vue'
 import MsSelectOption from '@/components/ms-select/MsSelectOption.vue'
@@ -280,11 +281,23 @@ watch(keyword, () => {
   debounceGetData()
 })
 
+const handleKeyDown = (event) => {
+  if (event.ctrlKey && event.key === '1') {
+    event.preventDefault()
+    handleOpenDialogCreate()
+  }
+}
+
 onMounted(() => {
+  window.addEventListener('keydown', handleKeyDown)
   nextTick(() => {
     getData()
     getMasterData()
   })
+})
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKeyDown)
 })
 </script>
 

@@ -336,12 +336,14 @@
             </div>
             <div class="flex items-center gap-x-2">
               <div
+                title="Cất (Ctrl + s)"
                 class="flex items-center justify-center cursor-pointer !h-[30px] !px-4 !rounded-[3px] !text-[13px] !bg-white hover:!bg-[#d2d3d6] !border !border-[#8d9096] !text-111"
                 @click="handleConfirm2"
               >
                 {{ confirmText2 }}
               </div>
               <div
+                title="Cất và thêm (Ctrl + Shift + s)"
                 class="flex items-center justify-center cursor-pointer !h-[30px] !px-4 !text-white !text-[13px] !bg-primary hover:!bg-[#35bf22] !rounded-[3px] !border-transparent"
                 @click="handleConfirm"
               >
@@ -358,7 +360,7 @@
 <script setup>
 import MsInputControl from '@/components/ms-input/MsInputControl.vue'
 import MsCheckboxControl from '@/components/ms-checkbox/MsCheckboxControl.vue'
-import { ref, watch } from 'vue'
+import { onMounted, onUnmounted, ref, watch } from 'vue'
 import MsTableSelectSearchControl from '@/components/ms-select/MsTableSelectSearchControl.vue'
 import { useForm, useFieldArray } from 'vee-validate'
 import MsInputDateControl from '@/components/ms-input/MsInputDateControl.vue'
@@ -607,6 +609,28 @@ const handleConfirm2 = handleSubmit(async (values) => {
   } catch (error) {
     showErrorMsg(error)
   }
+})
+
+const handleKeyDown = (event) => {
+  const key = event.key.toLowerCase()
+  if (event.ctrlKey && event.shiftKey && key === 's') {
+    event.preventDefault()
+    handleConfirm()
+  } else if (event.ctrlKey && key === 's') {
+    event.preventDefault()
+    handleConfirm2()
+  } else if (key === 'escape') {
+    event.preventDefault()
+    handleClose()
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', handleKeyDown)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKeyDown)
 })
 </script>
 
