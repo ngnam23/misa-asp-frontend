@@ -54,14 +54,35 @@ export const useEmployeeDialog = () => {
     type.value = 'create'
   }
 
+  const listGroupEmployees = ref([])
+  const listAccountsPayables = ref([])
+  const listAccountsReceivables = ref([])
+
+  const getMasterData = async () => {
+    try {
+      const response = await http.get(listApi.MasterData)
+      if (response.success) {
+        listGroupEmployees.value = response.data.groupEmployees
+        listAccountsPayables.value = response.data.accountsPayables
+        listAccountsReceivables.value = response.data.accountsReceivables
+      }
+    } catch (error) {
+      console.error('Error fetching master data:', error)
+    }
+  }
+
   return {
     isOpenEmployeeDialog,
     employeeDetail,
     type,
     newCode,
+    listGroupEmployees,
+    listAccountsPayables,
+    listAccountsReceivables,
     handleOpenDialogCreate,
     handleOpenDialogToUpdate,
     handleOpenDialogToDouble,
     handleSaveAndAdd,
+    getMasterData,
   }
 }

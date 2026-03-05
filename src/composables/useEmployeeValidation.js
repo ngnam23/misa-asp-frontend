@@ -13,7 +13,7 @@ export const useEmployeeValidation = () => {
     cccdNumber: yup.string().nullable(),
     dateOfIssuance: yup.date().nullable(),
     issuingAuthority: yup.string().nullable(),
-    groupCustomerSupplier: yup.string().nullable(),
+    groupEmployee: yup.string().nullable(),
     accountsReceivable: yup.string().nullable(),
     accountsPayable: yup.string().nullable(),
     salaryNegotiable: yup.number().nullable(),
@@ -49,7 +49,7 @@ export const useEmployeeValidation = () => {
       salarySubjectInsuranceContributions: 0,
       loaiHopDong: 0,
       numberOfDependents: 0,
-      banks: [],
+      banks: [{ bankNumber: '', bankName: '', bankAddress: '', bankCity: '' }],
     }
   }
 

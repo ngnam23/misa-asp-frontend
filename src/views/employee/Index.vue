@@ -4,6 +4,9 @@
     :employeeDetail="employeeDetail"
     :type="type"
     :newCode="newCode"
+    :listGroupEmployees="listGroupEmployees"
+    :listAccountsPayables="listAccountsPayables"
+    :listAccountsReceivables="listAccountsReceivables"
     title="Thông tin nhân viên"
     @close="isOpenEmployeeDialog = false"
     @refresh="getData"
@@ -204,10 +207,14 @@ const {
   employeeDetail,
   type,
   newCode,
+  listGroupEmployees,
+  listAccountsPayables,
+  listAccountsReceivables,
   handleOpenDialogCreate,
   handleOpenDialogToUpdate,
   handleOpenDialogToDouble,
   handleSaveAndAdd,
+  getMasterData,
 } = useEmployeeDialog()
 
 const isOpenCustomColumnDrawer = ref(false)
@@ -276,6 +283,7 @@ watch(keyword, () => {
 onMounted(() => {
   nextTick(() => {
     getData()
+    getMasterData()
   })
 })
 </script>

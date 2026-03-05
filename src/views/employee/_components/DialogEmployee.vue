@@ -74,11 +74,20 @@
                 <div v-if="values.isCustomer || values.isSupplier" class="w-full">
                   <MsTableSelectSearchControl
                     label="Nhóm khách hàng, nhà cung cấp"
-                    name="groupCustomerSupplier"
+                    name="groupEmployee"
                     :columns="[
                       { field: 'value', label: 'Mã nhóm KH, NCC', width: '160px' },
                       { field: 'name', label: 'Tên nhóm KH, NCC' },
                     ]"
+                    :options="
+                      listGroupEmployees.map((item) => ({
+                        groupEmployee: item.groupEmployeeID.toUpperCase(),
+                        value: item.groupEmployeeCode,
+                        name: item.groupEmployeeName,
+                      }))
+                    "
+                    value-field="groupEmployee"
+                    display-field="name"
                   />
                 </div>
               </div>
@@ -123,13 +132,13 @@
                         { field: 'value', label: 'Số tài khoản', width: '160px' },
                         { field: 'name', label: 'Tên tài khoản' },
                       ]"
-                      :options="[
-                        {
-                          accountsReceivable: '35ADA107-3F12-F111-A545-34CFF6887D3F',
-                          value: '131',
-                          name: 'Phải thu của khách hàng',
-                        },
-                      ]"
+                      :options="
+                        listAccountsReceivables.map((item) => ({
+                          accountsReceivable: item.accountsReceivableID.toUpperCase(),
+                          value: item.bankNumber,
+                          name: item.bankName,
+                        }))
+                      "
                       value-field="accountsReceivable"
                       display-field="value"
                     />
@@ -142,13 +151,13 @@
                         { field: 'value', label: 'Số tài khoản', width: '160px' },
                         { field: 'name', label: 'Tên tài khoản' },
                       ]"
-                      :options="[
-                        {
-                          accountsPayable: '985C551C-3F12-F111-A545-34CFF6887D3F',
-                          value: '331',
-                          name: 'Phải trả cho người bán',
-                        },
-                      ]"
+                      :options="
+                        listAccountsPayables.map((item) => ({
+                          accountsPayable: item.accountsReceivableID.toUpperCase(),
+                          value: item.bankNumber,
+                          name: item.bankName,
+                        }))
+                      "
                       value-field="accountsPayable"
                       display-field="value"
                     />
@@ -395,6 +404,18 @@ const props = defineProps({
     type: String,
     default: '',
   },
+  listGroupEmployees: {
+    type: Array,
+    default: () => [],
+  },
+  listAccountsPayables: {
+    type: Array,
+    default: () => [],
+  },
+  listAccountsReceivables: {
+    type: Array,
+    default: () => [],
+  },
 })
 
 const { schema, getEmployeeInitialValues } = useEmployeeValidation()
@@ -437,6 +458,9 @@ watch(
       setFieldValue('accountsReceivable', '35ADA107-3F12-F111-A545-34CFF6887D3F')
     } else {
       setFieldValue('accountsReceivable', null)
+      if (!values.isSupplier) {
+        setFieldValue('groupEmployee', null)
+      }
     }
   },
 )
@@ -448,6 +472,9 @@ watch(
       setFieldValue('accountsPayable', '985C551C-3F12-F111-A545-34CFF6887D3F')
     } else {
       setFieldValue('accountsPayable', null)
+      if (!values.isCustomer) {
+        setFieldValue('groupEmployee', null)
+      }
     }
   },
 )
@@ -457,9 +484,13 @@ watch(
   (isOpen) => {
     if (isOpen) {
       if (props.type === 'create') {
-        setFieldValue('employeeCode', props.newCode)
+        setValues({
+          ...getEmployeeInitialValues(props.type, props.newCode, props.employeeDetail),
+          banks: [{ bankNumber: '', bankName: '', bankAddress: '', bankCity: '' }],
+        })
       } else if (props.type === 'update' || props.type === 'double') {
         if (props.employeeDetail) {
+          const detailBanks = props.employeeDetail.banks || []
           setValues({
             ...props.employeeDetail,
             dateOfBirth: props.employeeDetail.dateOfBirth
@@ -470,6 +501,10 @@ watch(
               : null,
             employeeCode:
               props.type === 'double' ? props.newCode : props.employeeDetail.employeeCode,
+            banks:
+              detailBanks.length > 0
+                ? detailBanks
+                : [{ bankNumber: '', bankName: '', bankAddress: '', bankCity: '' }],
           })
         }
       }
@@ -483,12 +518,12 @@ watch(
     if (props.isOpen && newCode && (type === 'create' || type === 'double')) {
       setFieldValue('employeeCode', newCode)
     }
+    tabActive.value = 1
   },
 )
 
 const handleClose = () => {
   resetForm()
-  setFieldValue('banks', [])
   tabActive.value = 1
   emit('close')
 }
