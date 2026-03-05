@@ -20,24 +20,32 @@
       </div>
     </div>
 
-    <Transition :name="dropUp ? 'dropdown-up' : 'dropdown'">
-      <div v-if="isOpen" ref="dropdownRef" class="select-dropdown" :class="{ 'drop-up': dropUp }">
-        <ul class="select-options">
-          <li
-            v-for="option in filteredOptions"
-            :key="option.value"
-            class="select-option"
-            :class="{ selected: option.value === value }"
-            @click="selectOption(option.value)"
-          >
-            {{ option.label }}
-          </li>
-          <li v-if="filteredOptions.length === 0" class="select-option no-result">
-            Không tìm thấy kết quả
-          </li>
-        </ul>
-      </div>
-    </Transition>
+    <Teleport to="body">
+      <Transition :name="dropUp ? 'dropdown-up' : 'dropdown'">
+        <div
+          v-if="isOpen"
+          ref="dropdownRef"
+          class="select-dropdown"
+          :class="{ 'drop-up': dropUp }"
+          :style="dropdownStyle"
+        >
+          <ul class="select-options">
+            <li
+              v-for="option in filteredOptions"
+              :key="option.value"
+              class="select-option"
+              :class="{ selected: option.value === value }"
+              @click="selectOption(option.value)"
+            >
+              {{ option.label }}
+            </li>
+            <li v-if="filteredOptions.length === 0" class="select-option no-result">
+              Không tìm thấy kết quả
+            </li>
+          </ul>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
@@ -67,6 +75,14 @@ const inputRef = ref(null)
 const searchText = ref('')
 const isSearching = ref(false)
 
+const dropdownStyle = ref({
+  position: 'fixed',
+  top: '0px',
+  left: '0px',
+  width: '0px',
+  zIndex: 10000,
+})
+
 const selectedLabel = computed(() => {
   const found = props.options.find((opt) => opt.value === value.value)
   return found ? found.label : ''
@@ -95,20 +111,32 @@ watch(isOpen, (val) => {
 
 function calculatePosition() {
   if (!selectRef.value) return
-  const triggerRect = selectRef.value.getBoundingClientRect()
-  const dropdownHeight = dropdownRef.value?.scrollHeight ?? 260
+  const triggerRect = selectRef.value.querySelector('.select-trigger').getBoundingClientRect()
+  const dropdownHeight = 260 // Giá trị mặc định hoặc có thể đo thực tế
+
   const spaceBelow = window.innerHeight - triggerRect.bottom
   const spaceAbove = triggerRect.top
+
   dropUp.value = spaceBelow < dropdownHeight && spaceAbove > spaceBelow
+
+  dropdownStyle.value = {
+    position: 'fixed',
+    left: `${triggerRect.left}px`,
+    width: `${triggerRect.width}px`,
+    zIndex: 10000,
+  }
+
+  if (dropUp.value) {
+    dropdownStyle.value.bottom = `${window.innerHeight - triggerRect.top + 2}px`
+    dropdownStyle.value.top = 'auto'
+  } else {
+    dropdownStyle.value.top = `${triggerRect.bottom + 2}px`
+    dropdownStyle.value.bottom = 'auto'
+  }
 }
 
 function onInputFocus() {
   searchText.value = displayValue.value
-  //   isSearching.value = true
-  //   if (!isOpen.value) {
-  //     isOpen.value = true
-  //     nextTick(() => calculatePosition())
-  //   }
 }
 
 function onSearchInput(e) {
@@ -139,17 +167,33 @@ function selectOption(selectedValue) {
 }
 
 function handleClickOutside(e) {
-  if (selectRef.value && !selectRef.value.contains(e.target)) {
+  if (
+    selectRef.value &&
+    !selectRef.value.contains(e.target) &&
+    !e.target.closest('.select-dropdown')
+  ) {
     isOpen.value = false
+  }
+}
+
+// Cập nhật vị trí khi scroll hoặc resize
+const handleUpdatePosition = () => {
+  if (isOpen.value) {
+    calculatePosition()
   }
 }
 
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
+  window.addEventListener('resize', handleUpdatePosition)
+  // Lắng nghe sự kiện scroll trên toàn bộ các phần tử (capture: true) để đảm bảo dropdown không bị lệch
+  window.addEventListener('scroll', handleUpdatePosition, true)
 })
 
 onBeforeUnmount(() => {
   document.removeEventListener('click', handleClickOutside)
+  window.removeEventListener('resize', handleUpdatePosition)
+  window.removeEventListener('scroll', handleUpdatePosition, true)
 })
 </script>
 
