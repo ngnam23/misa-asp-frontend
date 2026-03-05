@@ -31,8 +31,8 @@ const { value, errorMessage, handleBlur } = useField(props.name)
       ]"
     />
 
-    <!-- <p v-if="errorMessage" class="text-[red] text-xs font-normal line-clamp-1">
+    <p v-if="errorMessage" class="text-[red] text-xs font-normal line-clamp-1">
       {{ errorMessage }}
-    </p> -->
+    </p>
   </div>
 </template>

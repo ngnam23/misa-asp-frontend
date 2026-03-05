@@ -21,14 +21,21 @@ export const useEmployeeValidation = () => {
     salarySubjectInsuranceContributions: yup.number().nullable(),
     loaiHopDong: yup.number().nullable(),
     numberOfDependents: yup.number().nullable(),
-    bankNumber: yup.string().nullable(),
-    bankName: yup.string().nullable(),
-    bankAddress: yup.string().nullable(),
-    bankCity: yup.string().nullable(),
     address: yup.string().nullable(),
     phoneNumber: yup.string().nullable(),
     landlinePhone: yup.string().nullable(),
     email: yup.string().nullable(),
+    banks: yup
+      .array()
+      .of(
+        yup.object({
+          bankNumber: yup.string().nullable(),
+          bankName: yup.string().nullable(),
+          bankAddress: yup.string().nullable(),
+          bankCity: yup.string().nullable(),
+        }),
+      )
+      .nullable(),
   })
 
   const getEmployeeInitialValues = (type, newCode, employeeDetail) => {
@@ -42,6 +49,7 @@ export const useEmployeeValidation = () => {
       salarySubjectInsuranceContributions: 0,
       loaiHopDong: 0,
       numberOfDependents: 0,
+      banks: [],
     }
   }
 

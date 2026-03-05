@@ -24,6 +24,7 @@ const { value, errorMessage, handleBlur } = useField(props.name)
       v-model="value"
       showIcon
       fluid
+      showTime
       iconDisplay="input"
       dateFormat="dd/mm/yy"
       placeholder="dd/mm/yyyy"

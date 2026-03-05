@@ -54,6 +54,11 @@
               row['banks'].length > 0 ? row['banks'][0][field.key] : ''
             }}</span>
           </template>
+          <template v-else-if="field.key === 'createdDate' || field.key === 'modifiedDate'">
+            <span class="!truncate line-clamp-1">{{
+              row[field.key] ? formatDateTimeDDMMYYYYHHmm(row[field.key]) : ''
+            }}</span>
+          </template>
           <template v-else
             ><span class="!truncate line-clamp-1">{{
               field.type === 'date' ? formatDateDDMMYYYY(row[field.key]) : row[field.key]
@@ -71,7 +76,7 @@
 <script setup>
 import { ref, watch } from 'vue'
 import Checkbox from 'primevue/checkbox'
-import { formatDateDDMMYYYY } from '@/utils/formatter'
+import { formatDateDDMMYYYY, formatDateTimeDDMMYYYYHHmm } from '@/utils/formatter'
 
 const props = defineProps({
   fields: {

@@ -248,35 +248,51 @@
                         </tr>
                       </thead>
                       <tbody>
-                        <tr class="flex w-full">
+                        <tr v-for="(item, index) in banks" :key="index" class="flex w-full">
                           <td
                             class="h-[34px] border-r border-b border-c7 w-[150px] bg-e5f px-2.5 inline-flex items-center justify-start text-xs text-111"
                           >
-                            <MsInputControl name="bankNumber" />
+                            <MsInputControl :name="`banks.${index}.bankNumber`" />
                           </td>
                           <td
                             class="h-[34px] border-r border-b border-c7 w-[200px] bg-e5f px-2.5 inline-flex items-center justify-start text-xs text-111"
                           >
-                            <MsInputControl name="bankName" />
+                            <MsInputControl :name="`banks.${index}.bankName`" />
                           </td>
                           <td
                             class="h-[34px] border-r border-b border-c7 w-[180px] bg-e5f px-2.5 inline-flex items-center justify-start text-xs text-111"
                           >
-                            <MsInputControl name="bankAddress" />
+                            <MsInputControl :name="`banks.${index}.bankAddress`" />
                           </td>
                           <td
                             class="h-[34px] border-r border-b border-c7 flex-1 bg-e5f px-2.5 inline-flex items-center justify-start text-xs text-111"
                           >
-                            <MsInputControl name="bankCity" />
+                            <MsInputControl :name="`banks.${index}.bankCity`" />
                           </td>
                           <td
                             class="h-[34px] w-[40px] border-b border-c7 bg-e5f px-2.5 inline-flex items-center justify-center text-xs text-111"
                           >
-                            <div class="icon-delete"></div>
+                            <div class="icon-delete" @click="remove(index)"></div>
                           </td>
                         </tr>
                       </tbody>
                     </table>
+                    <div class="flex items-center pt-2.5 gap-x-2">
+                      <div
+                        @click="
+                          push({ bankNumber: '', bankName: '', bankAddress: '', bankCity: '' })
+                        "
+                        class="flex items-center justify-center cursor-pointer !h-[24px] !px-4 !rounded-[3px] !text-[12px] !bg-white !border !border-[#8d9096] !text-111 font-semibold"
+                      >
+                        Thêm dòng
+                      </div>
+                      <div
+                        @click="setFieldValue('banks', [])"
+                        class="flex items-center justify-center cursor-pointer !h-[24px] !px-4 !rounded-[3px] !text-[12px] !bg-white !border !border-[#8d9096] !text-111 font-semibold"
+                      >
+                        Xóa hết dòng
+                      </div>
+                    </div>
                   </div>
                 </div>
                 <div v-show="tabActive === 3" class="m-3">
@@ -335,7 +351,7 @@ import MsInputControl from '@/components/ms-input/MsInputControl.vue'
 import MsCheckboxControl from '@/components/ms-checkbox/MsCheckboxControl.vue'
 import { ref, watch } from 'vue'
 import MsTableSelectSearchControl from '@/components/ms-select/MsTableSelectSearchControl.vue'
-import { useForm } from 'vee-validate'
+import { useForm, useFieldArray } from 'vee-validate'
 import MsInputDateControl from '@/components/ms-input/MsInputDateControl.vue'
 import MsRadioControl from '@/components/ms-radio/MsRadioControl.vue'
 import MsInputNumberControl from '@/components/ms-input/MsInputNumberControl.vue'
@@ -390,6 +406,8 @@ const { setValues, handleSubmit, resetForm, setFieldValue, values } = useForm({
   initialValues: getEmployeeInitialValues(props.type, props.newCode, props.employeeDetail),
   keepValuesOnUnmount: true,
 })
+
+const { fields: banks, push, remove } = useFieldArray('banks')
 
 const toast = useToast()
 const dialogRef = ref(null)
@@ -470,12 +488,26 @@ watch(
 
 const handleClose = () => {
   resetForm()
+  setFieldValue('banks', [])
+  tabActive.value = 1
   emit('close')
 }
 
 // Hàm dùng chung để lưu dữ liệu lên Server
 const executeSaveAPI = async (values) => {
   let submitValues = { ...values }
+
+  if (submitValues.banks && Array.isArray(submitValues.banks)) {
+    submitValues.banks = submitValues.banks.filter((bank) => {
+      // Chỉ giữ lại những dòng có ít nhất một trường được nhập (không tính key của vee-validate nếu có)
+      return (
+        bank.bankNumber?.trim() ||
+        bank.bankName?.trim() ||
+        bank.bankAddress?.trim() ||
+        bank.bankCity?.trim()
+      )
+    })
+  }
 
   if (props.type === 'double') {
     delete submitValues.employeeID

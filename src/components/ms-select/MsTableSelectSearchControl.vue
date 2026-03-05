@@ -19,9 +19,9 @@
         <div :class="['icon-arrow-up-black icon', isOpen ? 'open' : '']"></div>
       </div>
     </div>
-    <!-- <p v-if="errorMessage" class="text-[red] text-xs font-normal line-clamp-1">
+    <p v-if="errorMessage" class="text-[red] text-xs font-normal line-clamp-1">
       {{ errorMessage }}
-    </p> -->
+    </p>
 
     <!-- Dropdown -->
     <Transition :name="dropUp ? 'dropdown-up' : 'dropdown'">
