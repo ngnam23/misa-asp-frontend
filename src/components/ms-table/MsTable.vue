@@ -20,7 +20,7 @@
         </th>
       </tr>
     </thead>
-    <tbody>
+    <tbody v-if="!isLoading">
       <tr v-for="row in rows" :key="row.employeeID" class="relative">
         <td class="!w-10 h-9 sticky left-0 z-20 bg-white border-b border-r border-c7">
           <div class="flex justify-center items-center">
@@ -65,6 +65,11 @@
         </td>
       </tr>
     </tbody>
+    <tbody v-else>
+      <tr v-for="number in Array.from({ length: 20 })" :key="number" class="relative h-9">
+        <Skeleton class="!h-9 !rounded-none mb-1" width="893px"></Skeleton>
+      </tr>
+    </tbody>
   </table>
 </template>
 
@@ -72,6 +77,7 @@
 import { ref, watch } from 'vue'
 import Checkbox from 'primevue/checkbox'
 import { formatDateDDMMYYYY, formatDateTimeDDMMYYYYHHmm } from '@/utils/formatter'
+import { Skeleton } from 'primevue'
 
 const props = defineProps({
   fields: {
@@ -85,6 +91,10 @@ const props = defineProps({
   keyField: {
     type: String,
     default: 'id',
+  },
+  isLoading: {
+    type: Boolean,
+    default: false,
   },
 })
 

@@ -114,6 +114,7 @@
             <ms-table
               :fields="fields.filter((field) => field.display)"
               :rows="rows"
+              :isLoading="isLoading"
               key-field="employeeID"
               @update-selected-ids="handleSelectedIds"
             >
@@ -200,6 +201,7 @@ const {
   gender,
   unitCode,
   fields,
+  isLoading,
   getData,
   updateRouterQuery,
   debounceGetData,

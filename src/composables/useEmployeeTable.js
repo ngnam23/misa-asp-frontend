@@ -36,6 +36,7 @@ export const useEmployeeTable = () => {
   const isActive = ref(+route.query.isActive === 0 ? 0 : +route.query.isActive || -1)
   const gender = ref(+route.query.gender === 0 ? 0 : +route.query.gender || -1)
   const unitCode = ref(route.query.unitCode || '')
+  const isLoading = ref(false)
 
   /**
    * Cập nhật các tham số trên URL dựa trên trạng thái hiện tại
@@ -80,6 +81,7 @@ export const useEmployeeTable = () => {
    * Gọi API lấy danh sách nhân viên từ server
    */
   const getData = async () => {
+    isLoading.value = true
     try {
       const response = await http.get(listApi.Employees, {
         params: {
@@ -96,10 +98,12 @@ export const useEmployeeTable = () => {
         rows.value = response.data.data
         totalItems.value = response.data.meta.total
       }
+      isLoading.value = false
     } catch (error) {
       console.error('Error fetching employee list:', error)
       rows.value = []
       totalItems.value = 0
+      isLoading.value = false
     }
   }
 
@@ -188,6 +192,7 @@ export const useEmployeeTable = () => {
     gender,
     unitCode,
     fields,
+    isLoading,
     getData,
     updateRouterQuery,
     debounceGetData,
