@@ -20,7 +20,7 @@
         </th>
       </tr>
     </thead>
-    <tbody v-if="!isLoading">
+    <tbody>
       <tr v-for="row in rows" :key="row.employeeID" class="relative">
         <td class="!w-10 h-9 sticky left-0 z-20 bg-white border-b border-r border-c7">
           <div class="flex justify-center items-center">
@@ -63,11 +63,6 @@
         <td class="w-[120px] h-8 sticky bg-white right-0 z-20 border-b border-l border-c7">
           <slot name="action" :row="row"></slot>
         </td>
-      </tr>
-    </tbody>
-    <tbody v-else>
-      <tr v-for="number in Array.from({ length: 20 })" :key="number" class="relative h-9">
-        <Skeleton class="!h-9 !rounded-none mb-1" width="893px"></Skeleton>
       </tr>
     </tbody>
   </table>
